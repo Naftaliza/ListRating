@@ -3,8 +3,12 @@ import type { Pokemon } from '../types/pokemon'
 
 const cache: Record<number, Pokemon[]> = {}
 
+const IS_DEV = import.meta.env.DEV
+
 const cdn = (path: string) =>
-  `/ghraw/PokeAPI/sprites/master/sprites/pokemon/${path}`
+  IS_DEV
+    ? `/ghraw/PokeAPI/sprites/master/sprites/pokemon/${path}`
+    : `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${path}`
 
 // Extract numeric ID from PokeAPI URL e.g. "https://pokeapi.co/api/v2/pokemon/25/"
 function idFromUrl(url: string): number {
@@ -27,8 +31,9 @@ export function usePokemon() {
 
     try {
       // Only 1 API call per generation — build Pokemon from list + IDs
+      const apiBase = IS_DEV ? '/pokeapi' : 'https://pokeapi.co'
       const res = await fetch(
-        `/pokeapi/api/v2/pokemon?limit=${limit}&offset=${offset}`
+        `${apiBase}/api/v2/pokemon?limit=${limit}&offset=${offset}`
       )
       if (!res.ok) throw new Error(`HTTP ${res.status}`)
       const data = await res.json()
