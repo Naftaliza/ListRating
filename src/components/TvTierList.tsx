@@ -121,16 +121,6 @@ export default function TvTierList({ onHome }: Props) {
     if (data.sourceType === 'tier') setTiers(removePokemon(data.pokemonId))
   }
 
-  function moveTierUp(index: number) {
-    if (index === 0) return
-    setTiers(prev => { const n = [...prev]; [n[index-1], n[index]] = [n[index], n[index-1]]; return n })
-  }
-
-  function moveTierDown(index: number) {
-    if (index === tiers.length - 1) return
-    setTiers(prev => { const n = [...prev]; [n[index], n[index+1]] = [n[index+1], n[index]]; return n })
-  }
-
   async function handleShare() {
     if (!tierListRef.current) return
     setShareStatus('copying')
@@ -176,14 +166,12 @@ export default function TvTierList({ onHome }: Props) {
       <div className={`main-layout${displayMode ? ' display-mode' : ''}`}>
         <div className="tier-list-col">
           <div className="tier-list" ref={tierListRef}>
-            {tiers.map((tier, index) => (
+            {tiers.map((tier) => (
               <TierRow
                 key={tier.id}
                 tier={tier}
                 onDrop={handleDropOnTier}
                 onLabelChange={(id, label) => setTiers(prev => prev.map(t => t.id === id ? { ...t, label } : t))}
-                onMoveUp={() => moveTierUp(index)}
-                onMoveDown={() => moveTierDown(index)}
               />
             ))}
           </div>

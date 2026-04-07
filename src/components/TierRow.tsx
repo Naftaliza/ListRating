@@ -6,11 +6,9 @@ interface Props {
   tier: Tier
   onDrop: (data: DragData, targetTierId: string) => void
   onLabelChange: (tierId: string, label: string) => void
-  onMoveUp: () => void
-  onMoveDown: () => void
 }
 
-export default function TierRow({ tier, onDrop, onLabelChange, onMoveUp, onMoveDown }: Props) {
+export default function TierRow({ tier, onDrop, onLabelChange }: Props) {
   const [isDragOver, setIsDragOver] = useState(false)
   const [editing, setEditing] = useState(false)
   const [draft, setDraft] = useState(tier.label)
@@ -119,11 +117,6 @@ export default function TierRow({ tier, onDrop, onLabelChange, onMoveUp, onMoveD
         ))}
       </div>
 
-      <div className="tier-controls">
-        <button className="tier-btn" title="Settings">⚙</button>
-        <button className="tier-btn" onClick={onMoveUp} title="Move up">▲</button>
-        <button className="tier-btn" onClick={onMoveDown} title="Move down">▼</button>
-      </div>
     </div>
   )
 }

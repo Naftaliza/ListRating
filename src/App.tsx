@@ -69,16 +69,6 @@ function PokemonTierList({ onHome }: { onHome: () => void }) {
     setTiers(prev => prev.map(t => t.id === tierId ? { ...t, label } : t))
   }
 
-  function moveTierUp(index: number) {
-    if (index === 0) return
-    setTiers(prev => { const n = [...prev]; [n[index-1], n[index]] = [n[index], n[index-1]]; return n })
-  }
-
-  function moveTierDown(index: number) {
-    if (index === tiers.length - 1) return
-    setTiers(prev => { const n = [...prev]; [n[index], n[index+1]] = [n[index+1], n[index]]; return n })
-  }
-
   async function handleShare() {
     if (!tierListRef.current) return
     setShareStatus('copying')
@@ -128,14 +118,12 @@ function PokemonTierList({ onHome }: { onHome: () => void }) {
         <div className={`main-layout${displayMode ? ' display-mode' : ''}`}>
           <div className="tier-list-col">
             <div className="tier-list" ref={tierListRef}>
-              {tiers.map((tier, index) => (
+              {tiers.map((tier) => (
                 <TierRow
                   key={tier.id}
                   tier={tier}
                   onDrop={handleDropOnTier}
                   onLabelChange={handleLabelChange}
-                  onMoveUp={() => moveTierUp(index)}
-                  onMoveDown={() => moveTierDown(index)}
                 />
               ))}
             </div>
