@@ -111,7 +111,7 @@ export default function TierRow({ tier, onDrop, onLabelChange }: Props) {
         onDragLeave={() => setIsDragOver(false)}
         onDrop={handleDrop}
       >
-        {tier.pokemon.length === 0 && <span className="tier-empty-hint">Drop Pokémon here</span>}
+        {tier.pokemon.length === 0 && <span className="tier-empty-hint">Drop here</span>}
         {tier.pokemon.map(p => (
           <PokemonImage key={p.id} pokemon={p} sourceType="tier" sourceTierId={tier.id} />
         ))}
