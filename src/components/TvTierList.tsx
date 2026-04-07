@@ -1,7 +1,8 @@
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import html2canvas from 'html2canvas'
 import TierRow from './TierRow'
 import TvModal from './TvModal'
+import TvCard from './TvCard'
 import type { TvShow } from './TvModal'
 import { ModalContext } from '../context/ModalContext'
 import type { Tier, DragData } from '../types/pokemon'
@@ -93,6 +94,7 @@ export default function TvTierList({ onHome }: Props) {
   const [isDragOver, setIsDragOver] = useState(false)
   const [modalShow, setModalShow] = useState<TvShow | null>(null)
   const tierListRef = useRef<HTMLDivElement>(null)
+  const poolRef = useRef<HTMLDivElement>(null)
 
   const rankedIds = new Set(tiers.flatMap(t => t.pokemon.map(p => p.id)))
   const poolShows = pool.filter(s => !rankedIds.has(s.id))
@@ -144,6 +146,19 @@ export default function TvTierList({ onHome }: Props) {
 
   const allShows = TV_SHOWS as TvShow[]
 
+  // Touch drop on pool zone
+  useEffect(() => {
+    const el = poolRef.current
+    if (!el) return
+    function onTouchDrop(e: Event) {
+      const { data } = (e as CustomEvent).detail
+      setIsDragOver(false)
+      if (data.sourceType === 'tier') setTiers(removePokemon(data.pokemonId))
+    }
+    el.addEventListener('touchdrop', onTouchDrop)
+    return () => el.removeEventListener('touchdrop', onTouchDrop)
+  }, [tiers])
+
   function openModal(id: number) {
     const show = allShows.find(s => s.id === id)
     if (show) setModalShow(show)
@@ -181,28 +196,15 @@ export default function TvTierList({ onHome }: Props) {
           <div className="pool-col">
             <div className="pool-wrapper">
               <div
+                ref={poolRef}
+                data-pool-zone="true"
                 className={`pokemon-pool tv-pool${isDragOver ? ' drag-over' : ''}`}
                 onDragOver={e => { e.preventDefault(); setIsDragOver(true) }}
                 onDragLeave={() => setIsDragOver(false)}
                 onDrop={handleDropOnPool}
               >
                 {poolShows.map(show => (
-                  <div
-                    key={show.id}
-                    className="tv-card"
-                    draggable
-                    onClick={() => setModalShow(show)}
-                    onDragStart={e => e.dataTransfer.setData('application/json', JSON.stringify({ pokemonId: show.id, sourceType: 'pool' }))}
-                  >
-                    <img
-                      src={show.image}
-                      alt={show.name}
-                      className="tv-poster"
-                      onError={e => { (e.target as HTMLImageElement).style.display = 'none'; (e.target as HTMLImageElement).nextElementSibling?.classList.add('tv-poster-fallback--visible') }}
-                    />
-                    <div className="tv-poster-fallback">📺</div>
-                    <span className="tv-name">{show.name}</span>
-                  </div>
+                  <TvCard key={show.id} show={show} onClick={() => setModalShow(show)} />
                 ))}
               </div>
             </div>
