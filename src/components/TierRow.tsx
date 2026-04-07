@@ -30,6 +30,19 @@ export default function TierRow({ tier, onDrop, onLabelChange, onMoveUp, onMoveD
     return () => ro.disconnect()
   }, [])
 
+  // Touch drop via custom event
+  useEffect(() => {
+    const el = zoneRef.current
+    if (!el) return
+    function onTouchDrop(e: Event) {
+      const { data } = (e as CustomEvent).detail
+      setIsDragOver(false)
+      onDrop(data as DragData, tier.id)
+    }
+    el.addEventListener('touchdrop', onTouchDrop)
+    return () => el.removeEventListener('touchdrop', onTouchDrop)
+  }, [tier.id, onDrop])
+
   function startEdit() { setDraft(tier.label); setEditing(true) }
 
   function commitEdit() {
@@ -58,7 +71,6 @@ export default function TierRow({ tier, onDrop, onLabelChange, onMoveUp, onMoveD
     onDrop(JSON.parse(raw) as DragData, tier.id)
   }
 
-  // Find largest sprite size where all items fit in the drop zone
   function computeSpriteSize(count: number, w: number, h: number): number {
     if (count === 0) return 60
     for (let s = 60; s >= 20; s -= 2) {
@@ -95,6 +107,7 @@ export default function TierRow({ tier, onDrop, onLabelChange, onMoveUp, onMoveD
 
       <div
         ref={zoneRef}
+        data-tier-id={tier.id}
         className={`tier-drop-zone${isDragOver ? ' drag-over' : ''}${tier.pokemon.length === 0 ? ' tier-drop-zone--empty' : ''}`}
         onDragOver={handleDragOver}
         onDragLeave={() => setIsDragOver(false)}

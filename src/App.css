@@ -845,6 +845,38 @@
   -webkit-box-orient: vertical;
 }
 
+/* ── Mobile layout ── */
+@media (max-width: 700px) {
+  .main-layout {
+    flex-direction: column;
+  }
+  .pool-col {
+    max-height: 45vh;
+    overflow-y: auto;
+  }
+  .tier-list-col {
+    overflow-y: auto;
+    max-height: 55vh;
+  }
+  .modal-card {
+    min-width: unset;
+    width: 90vw;
+    padding: 20px 16px;
+  }
+  .modal-nav {
+    width: 36px;
+    font-size: 28px;
+  }
+  .tv-modal-card {
+    min-width: unset;
+    width: 90vw;
+  }
+  .tv-modal-content {
+    flex-direction: column;
+    align-items: center;
+  }
+}
+
 /* ── Loading ── */
 .loading {
   display: flex;

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import type { Pokemon, DragData } from '../types/pokemon'
 import { usePokemon } from '../hooks/usePokemon'
 import { GENERATIONS } from '../constants/generations'
@@ -14,18 +14,30 @@ export default function PokemonPool({ rankedIds, onDrop, onGenLoaded }: Props) {
   const [activeGen, setActiveGen] = useState(1)
   const [isDragOver, setIsDragOver] = useState(false)
   const { genData, loading, error, fetchGen } = usePokemon()
+  const poolRef = useRef<HTMLDivElement>(null)
 
-  // Fetch all gens immediately on mount
   useEffect(() => {
     GENERATIONS.forEach(gen => fetchGen(gen.id, gen.offset, gen.limit))
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Notify App when any gen's data arrives
   useEffect(() => {
     Object.entries(genData).forEach(([id, pokemon]) => {
       if (pokemon) onGenLoaded(Number(id), pokemon)
     })
   }, [genData]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Touch drop via custom event
+  useEffect(() => {
+    const el = poolRef.current
+    if (!el) return
+    function onTouchDrop(e: Event) {
+      const { data } = (e as CustomEvent).detail
+      setIsDragOver(false)
+      if ((data as DragData).sourceType === 'tier') onDrop(data as DragData)
+    }
+    el.addEventListener('touchdrop', onTouchDrop)
+    return () => el.removeEventListener('touchdrop', onTouchDrop)
+  }, [onDrop])
 
   const currentPokemon = (genData[activeGen] ?? []).filter(p => !rankedIds.has(p.id))
   const isLoading = loading[activeGen] ?? false
@@ -61,6 +73,8 @@ export default function PokemonPool({ rankedIds, onDrop, onGenLoaded }: Props) {
       </div>
 
       <div
+        ref={poolRef}
+        data-pool-zone="true"
         className={`pokemon-pool${isDragOver ? ' drag-over' : ''}`}
         onDragOver={handleDragOver}
         onDragLeave={() => setIsDragOver(false)}
