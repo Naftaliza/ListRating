@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react'
+import { useState, useRef, useEffect, useMemo } from 'react'
 import html2canvas from 'html2canvas'
 import TierRow from './TierRow'
 import TvModal from './TvModal'
@@ -6,6 +6,7 @@ import TvCard from './TvCard'
 import type { TvShow } from './TvModal'
 import { ModalContext } from '../context/ModalContext'
 import type { Tier, DragData } from '../types/pokemon'
+import { useTvImages } from '../hooks/useTvImages'
 
 const DEFAULT_TIERS: Omit<Tier, 'pokemon'>[] = [
   { id: 'goat',   label: '🏆 GOAT',             color: 'linear-gradient(135deg, #ff4e50, #fc913a)' },
@@ -89,6 +90,15 @@ interface Props {
 export default function TvTierList({ onHome }: Props) {
   const [tiers, setTiers] = useState<Tier[]>(DEFAULT_TIERS.map(t => ({ ...t, pokemon: [] })))
   const [pool] = useState<DraggableShow[]>(TV_SHOWS)
+  const tvImages = useTvImages(TV_SHOWS)
+  const enrichedPool = useMemo(
+    () => pool.map(s => tvImages[s.id] ? { ...s, image: tvImages[s.id] } : s),
+    [pool, tvImages]
+  )
+  const allShows = useMemo(
+    () => (TV_SHOWS as TvShow[]).map(s => tvImages[s.id] ? { ...s, image: tvImages[s.id] } : s),
+    [tvImages]
+  )
   const [displayMode, setDisplayMode] = useState(false)
   const [shareStatus, setShareStatus] = useState<'idle' | 'copying' | 'done'>('idle')
   const [isDragOver, setIsDragOver] = useState(false)
@@ -97,7 +107,7 @@ export default function TvTierList({ onHome }: Props) {
   const poolRef = useRef<HTMLDivElement>(null)
 
   const rankedIds = new Set(tiers.flatMap(t => t.pokemon.map(p => p.id)))
-  const poolShows = pool.filter(s => !rankedIds.has(s.id))
+  const poolShows = enrichedPool.filter(s => !rankedIds.has(s.id))
 
   function findShow(id: number) { return pool.find(s => s.id === id) }
 
@@ -143,8 +153,6 @@ export default function TvTierList({ onHome }: Props) {
       })
     } catch { setShareStatus('idle') }
   }
-
-  const allShows = TV_SHOWS as TvShow[]
 
   // Touch drop on pool zone
   useEffect(() => {

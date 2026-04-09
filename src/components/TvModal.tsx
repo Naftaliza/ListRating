@@ -18,7 +18,7 @@ interface Props {
   onNavigate: (show: TvShow) => void
 }
 
-const LARGE = (path: string) => path.replace('/w92/', '/w342/')
+// TVmaze medium images (210×295) are sufficient for the modal's 160px display
 
 export default function TvModal({ show, allShows, onClose, onNavigate }: Props) {
   const currentIndex = allShows.findIndex(s => s.id === show.id)
@@ -49,10 +49,9 @@ export default function TvModal({ show, allShows, onClose, onNavigate }: Props) 
 
         <div className="tv-modal-content">
           <img
-            src={LARGE(show.image)}
+            src={show.image}
             alt={show.name}
             className="tv-modal-poster"
-            onError={e => { (e.target as HTMLImageElement).src = show.image }}
           />
           <div className="tv-modal-info">
             <div className="tv-modal-name">{show.name}</div>
