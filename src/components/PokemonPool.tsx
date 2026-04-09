@@ -59,6 +59,8 @@ export default function PokemonPool({ rankedIds, onDrop, onGenLoaded }: Props) {
   }
 
   return (
+    <>
+    <div className="pool-label">Unranked</div>
     <div className="pool-wrapper">
       <div className="gen-tabs">
         {GENERATIONS.map(gen => (
@@ -98,5 +100,6 @@ export default function PokemonPool({ rankedIds, onDrop, onGenLoaded }: Props) {
         ))}
       </div>
     </div>
+    </>
   )
 }

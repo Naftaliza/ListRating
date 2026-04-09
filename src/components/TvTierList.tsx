@@ -194,6 +194,7 @@ export default function TvTierList({ onHome }: Props) {
 
         {!displayMode && (
           <div className="pool-col">
+            <div className="pool-label">Unranked</div>
             <div className="pool-wrapper">
               <div
                 ref={poolRef}
