@@ -109,7 +109,7 @@ export default function TvTierList({ onHome }: Props) {
   const rankedIds = new Set(tiers.flatMap(t => t.pokemon.map(p => p.id)))
   const poolShows = enrichedPool.filter(s => !rankedIds.has(s.id))
 
-  function findShow(id: number) { return pool.find(s => s.id === id) }
+  function findShow(id: number) { return enrichedPool.find(s => s.id === id) }
 
   function removePokemon(id: number) {
     return tiers.map(t => ({ ...t, pokemon: t.pokemon.filter(p => p.id !== id) }))
