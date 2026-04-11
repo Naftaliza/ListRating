@@ -43,6 +43,12 @@ export default function MediaTierList({ items, imageMap, onHome, shareFilename =
   const t = tr(lang)
   const [tiers, setTiers] = useState<Tier[]>(() => makeDefaultTiers(t.tiers))
   const [displayMode, setDisplayMode] = useState(false)
+
+  // Update default tier labels when language changes
+  useEffect(() => {
+    const defaults = makeDefaultTiers(t.tiers)
+    setTiers(prev => prev.map((tier, i) => ({ ...tier, label: defaults[i]?.label ?? tier.label })))
+  }, [lang]) // eslint-disable-line react-hooks/exhaustive-deps
   const [shareStatus, setShareStatus] = useState<'idle' | 'copying' | 'done'>('idle')
   const [isDragOver, setIsDragOver] = useState(false)
   const [modalShow, setModalShow] = useState<TvShow | null>(null)

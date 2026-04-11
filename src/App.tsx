@@ -1,4 +1,4 @@
-import { useState, useMemo, useRef } from 'react'
+import { useState, useMemo, useRef, useEffect } from 'react'
 import html2canvas from 'html2canvas'
 import type { Tier, Pokemon, DragData } from './types/pokemon'
 import { ModalContext } from './context/ModalContext'
@@ -34,6 +34,12 @@ function PokemonTierList({ onHome }: { onHome: () => void }) {
   const t = tr(lang)
   const [tiers, setTiers] = useState<Tier[]>(() => makeTiers(t.tiers))
   const [allPokemon, setAllPokemon] = useState<Map<number, Pokemon>>(new Map())
+
+  // Update default tier labels when language changes
+  useEffect(() => {
+    const defaults = makeTiers(t.tiers)
+    setTiers(prev => prev.map((tier, i) => ({ ...tier, label: defaults[i]?.label ?? tier.label })))
+  }, [lang]) // eslint-disable-line react-hooks/exhaustive-deps
   const [modalPokemon, setModalPokemon] = useState<Pokemon | null>(null)
   const [shareStatus, setShareStatus] = useState<'idle' | 'copying' | 'done'>('idle')
   const [displayMode, setDisplayMode] = useState(false)

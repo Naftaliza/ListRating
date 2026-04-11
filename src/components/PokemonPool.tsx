@@ -3,6 +3,8 @@ import type { Pokemon, DragData } from '../types/pokemon'
 import { usePokemon } from '../hooks/usePokemon'
 import { GENERATIONS } from '../constants/generations'
 import PokemonImage from './PokemonImage'
+import { useLang } from '../context/LangContext'
+import { tr } from '../i18n'
 
 interface Props {
   rankedIds: Set<number>
@@ -11,6 +13,8 @@ interface Props {
 }
 
 export default function PokemonPool({ rankedIds, onDrop, onGenLoaded }: Props) {
+  const { lang } = useLang()
+  const t = tr(lang)
   const [activeGen, setActiveGen] = useState(1)
   const [isDragOver, setIsDragOver] = useState(false)
   const { genData, loading, error, fetchGen } = usePokemon()
@@ -60,7 +64,7 @@ export default function PokemonPool({ rankedIds, onDrop, onGenLoaded }: Props) {
 
   return (
     <>
-    <div className="pool-label">Unranked</div>
+    <div className="pool-label">{t.unranked}</div>
     <div className="pool-wrapper">
       <div className="gen-tabs">
         {GENERATIONS.map(gen => (
