@@ -1,5 +1,8 @@
 import { useState, useRef, useEffect, useMemo } from 'react'
 import html2canvas from 'html2canvas'
+import { useLang } from '../context/LangContext'
+import { tr } from '../i18n'
+import FlagIcon from './FlagIcon'
 import TierRow from './TierRow'
 import TvModal from './TvModal'
 import TvCard from './TvCard'
@@ -7,15 +10,19 @@ import type { TvShow } from './TvModal'
 import { ModalContext } from '../context/ModalContext'
 import type { Tier, DragData } from '../types/pokemon'
 
-const DEFAULT_TIERS: Omit<Tier, 'pokemon'>[] = [
-  { id: 'goat',   label: '🏆 GOAT',              color: 'linear-gradient(135deg, #ff4e50, #fc913a)' },
-  { id: 'elite',  label: '⚡ Elite',             color: 'linear-gradient(135deg, #f9a825, #ff6f00)' },
-  { id: 'solid',  label: '💪 Solid Pick',        color: 'linear-gradient(135deg, #fff176, #f9a825)' },
-  { id: 'decent', label: '👍 Decent',            color: 'linear-gradient(135deg, #b5f5a0, #57c84d)' },
-  { id: 'meh',    label: '😐 Meh',              color: 'linear-gradient(135deg, #80deea, #0097a7)' },
-  { id: 'weak',   label: '💀 Weak',             color: 'linear-gradient(135deg, #9575cd, #512da8)' },
-  { id: 'trash',  label: '🗑️ Who Approved This', color: 'linear-gradient(135deg, #546e7a, #263238)' },
+const TIER_COLORS = [
+  { id: 'goat',   key: 'goat'  as const, color: 'linear-gradient(135deg, #ff4e50, #fc913a)' },
+  { id: 'elite',  key: 'elite' as const, color: 'linear-gradient(135deg, #f9a825, #ff6f00)' },
+  { id: 'solid',  key: 'solid' as const, color: 'linear-gradient(135deg, #fff176, #f9a825)' },
+  { id: 'decent', key: 'decent'as const, color: 'linear-gradient(135deg, #b5f5a0, #57c84d)' },
+  { id: 'meh',    key: 'meh'  as const,  color: 'linear-gradient(135deg, #80deea, #0097a7)' },
+  { id: 'weak',   key: 'weak' as const,  color: 'linear-gradient(135deg, #9575cd, #512da8)' },
+  { id: 'trash',  key: 'trash' as const, color: 'linear-gradient(135deg, #546e7a, #263238)' },
 ]
+
+function makeDefaultTiers(tiers: ReturnType<typeof tr>['tiers']) {
+  return TIER_COLORS.map(t => ({ id: t.id, label: tiers[t.key], color: t.color, pokemon: [] as Tier['pokemon'] }))
+}
 
 interface PoolTab {
   key: string
@@ -32,7 +39,9 @@ interface Props {
 }
 
 export default function MediaTierList({ items, imageMap, onHome, shareFilename = 'tierlist', poolTabs }: Props) {
-  const [tiers, setTiers] = useState<Tier[]>(DEFAULT_TIERS.map(t => ({ ...t, pokemon: [] })))
+  const { lang, toggle } = useLang()
+  const t = tr(lang)
+  const [tiers, setTiers] = useState<Tier[]>(() => makeDefaultTiers(t.tiers))
   const [displayMode, setDisplayMode] = useState(false)
   const [shareStatus, setShareStatus] = useState<'idle' | 'copying' | 'done'>('idle')
   const [isDragOver, setIsDragOver] = useState(false)
@@ -126,22 +135,23 @@ export default function MediaTierList({ items, imageMap, onHome, shareFilename =
 
   return (
     <ModalContext.Provider value={(p: any) => openModal(p.id)}>
-      <div className="app">
+      <div className="app" dir={lang === 'he' ? 'rtl' : 'ltr'}>
         <div className="header">
-          <button className="header-btn home-btn" onClick={onHome}>⌂ Home</button>
+          <button className="header-btn home-btn" onClick={onHome}>{t.home}</button>
           <button
             className={`header-btn display-btn${displayMode ? ' display-btn--active' : ''}`}
             onClick={() => setDisplayMode(d => !d)}
           >
-            {displayMode ? '✎ Edit' : '✦ Present'}
+            {displayMode ? t.edit : t.present}
           </button>
           <button className="header-btn share-btn" onClick={handleShare} disabled={shareStatus !== 'idle'}>
-            {shareStatus === 'copying' ? '⏳ Capturing…' : shareStatus === 'done' ? '✓ Copied!' : '📸 Share'}
+            {shareStatus === 'copying' ? t.capturing : shareStatus === 'done' ? t.copied : t.share}
           </button>
           <button
             className="header-btn reset-btn"
-            onClick={() => setTiers(DEFAULT_TIERS.map(t => ({ ...t, pokemon: [] })))}
-          >↺ Reset</button>
+            onClick={() => setTiers(makeDefaultTiers(t.tiers))}
+          >{t.reset}</button>
+          <button className="header-btn lang-toggle-btn" onClick={toggle} style={{ display: 'flex', alignItems: 'center' }}><FlagIcon lang={lang} />{t.langToggle}</button>
         </div>
 
         <div className={`main-layout${displayMode ? ' display-mode' : ''}`}>
@@ -162,7 +172,7 @@ export default function MediaTierList({ items, imageMap, onHome, shareFilename =
 
           {!displayMode && (
             <div className="pool-col">
-              <div className="pool-label">Unranked</div>
+              <div className="pool-label">{t.unranked}</div>
               <div className="pool-wrapper">
                 {poolTabs && (
                   <div className="gen-tabs">
@@ -172,7 +182,7 @@ export default function MediaTierList({ items, imageMap, onHome, shareFilename =
                         className={`gen-tab${activePoolTab === tab.key ? ' active' : ''}`}
                         onClick={() => setActivePoolTab(tab.key)}
                       >
-                        {tab.label}
+                        {t.tabs[tab.label] ?? tab.label}
                       </button>
                     ))}
                   </div>

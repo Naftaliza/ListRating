@@ -108,12 +108,16 @@ function AnimeIcon() {
   )
 }
 
-const TOPICS = [
-  { id: 'pokemon',     label: 'Pokémon',    tagline: 'Rank every Pokémon by generation', Icon: Pokeball  },
-  { id: 'tvseries',   label: 'TV Series',  tagline: 'Rank your favourite shows',         Icon: TvIcon    },
-  { id: 'movies',     label: 'Movies',     tagline: 'Rate films from all eras',          Icon: MovieIcon },
-  { id: 'videogames', label: 'Video Games',tagline: 'Rank the greatest games ever made', Icon: GameIcon  },
-  { id: 'anime',      label: 'Anime',      tagline: 'Rank your favourite series',        Icon: AnimeIcon },
+import { useLang } from '../context/LangContext'
+import { tr } from '../i18n'
+import FlagIcon from './FlagIcon'
+
+const TOPIC_IDS = [
+  { id: 'pokemon',     Icon: Pokeball  },
+  { id: 'tvseries',   Icon: TvIcon    },
+  { id: 'movies',     Icon: MovieIcon },
+  { id: 'videogames', Icon: GameIcon  },
+  { id: 'anime',      Icon: AnimeIcon },
 ]
 
 interface Props {
@@ -121,17 +125,21 @@ interface Props {
 }
 
 export default function TopicSelect({ onSelect }: Props) {
+  const { lang, toggle } = useLang()
+  const t = tr(lang)
+
   return (
-    <div className="topic-page">
+    <div className="topic-page" dir={lang === 'he' ? 'rtl' : 'ltr'}>
       <div className="topic-card">
-        <h1 className="topic-title">Tier List Maker</h1>
-        <p className="topic-subtitle">Choose a topic to start ranking</p>
+        <button className="lang-toggle" onClick={toggle} style={{ display: 'flex', alignItems: 'center' }}><FlagIcon lang={lang} />{t.langToggle}</button>
+        <h1 className="topic-title">{t.tierListMaker}</h1>
+        <p className="topic-subtitle">{t.chooseTopic}</p>
         <div className="topic-cards-row">
-          {TOPICS.map(({ id, label, tagline, Icon }) => (
+          {TOPIC_IDS.map(({ id, Icon }) => (
             <button key={id} className="topic-pick-card" onClick={() => onSelect(id)}>
               <Icon />
-              <span className="topic-pick-label">{label}</span>
-              <span className="topic-pick-tagline">{tagline}</span>
+              <span className="topic-pick-label">{t.topics[id]?.label}</span>
+              <span className="topic-pick-tagline">{t.topics[id]?.tagline}</span>
             </button>
           ))}
         </div>
