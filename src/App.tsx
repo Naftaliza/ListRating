@@ -7,6 +7,9 @@ import PokemonPool from './components/PokemonPool'
 import PokemonModal from './components/PokemonModal'
 import TopicSelect from './components/TopicSelect'
 import TvTierList from './components/TvTierList'
+import MovieTierList from './components/MovieTierList'
+import GameTierList from './components/GameTierList'
+import AnimeTierList from './components/AnimeTierList'
 import './App.css'
 
 const DEFAULT_TIERS: Omit<Tier, 'pokemon'>[] = [
@@ -157,6 +160,9 @@ export default function App() {
   const [topic, setTopic] = useState<string | null>(null)
 
   if (!topic) return <TopicSelect onSelect={setTopic} />
-  if (topic === 'tvseries') return <TvTierList onHome={() => setTopic(null)} />
+  if (topic === 'tvseries')   return <TvTierList    onHome={() => setTopic(null)} />
+  if (topic === 'movies')     return <MovieTierList  onHome={() => setTopic(null)} />
+  if (topic === 'videogames') return <GameTierList   onHome={() => setTopic(null)} />
+  if (topic === 'anime')      return <AnimeTierList  onHome={() => setTopic(null)} />
   return <PokemonTierList onHome={() => setTopic(null)} />
 }

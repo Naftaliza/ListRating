@@ -31,11 +31,11 @@ export default function PokemonTooltip({ pokemon, x, y }: Props) {
       className="pokemon-tooltip"
       style={{ left, top }}
     >
-      <img src={pokemon.artwork} alt={name} className="tooltip-artwork" />
+      <img src={pokemon.artwork ?? pokemon.image} alt={name} className="tooltip-artwork" />
       <div className="tooltip-id">{idStr}</div>
       <div className="tooltip-name">{name}</div>
       <div className="tooltip-types">
-        {pokemon.types.map(t => (
+        {(pokemon.types ?? []).map(t => (
           <span
             key={t.name}
             className="tooltip-type-badge"

@@ -71,16 +71,18 @@ export default function TvCard({ show, onClick }: Props) {
       onPointerUp={handlePointerUp}
       style={{ touchAction: 'none' }}
     >
-      <img
-        src={show.image}
-        alt={show.name}
-        className="tv-poster"
-        onError={e => {
-          (e.target as HTMLImageElement).style.display = 'none'
-          ;(e.target as HTMLImageElement).nextElementSibling?.classList.add('tv-poster-fallback--visible')
-        }}
-      />
-      <div className="tv-poster-fallback">📺</div>
+      {show.image && (
+        <img
+          src={show.image}
+          alt={show.name}
+          className="tv-poster"
+          onError={e => {
+            (e.target as HTMLImageElement).style.display = 'none'
+            ;(e.target as HTMLImageElement).nextElementSibling?.classList.add('tv-poster-fallback--visible')
+          }}
+        />
+      )}
+      <div className={`tv-poster-fallback${!show.image ? ' tv-poster-fallback--visible' : ''}`}>📺</div>
       <span className="tv-name">{show.name}</span>
     </div>
   )
