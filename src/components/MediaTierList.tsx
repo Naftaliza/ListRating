@@ -17,19 +17,27 @@ const DEFAULT_TIERS: Omit<Tier, 'pokemon'>[] = [
   { id: 'trash',  label: '🗑️ Who Approved This', color: 'linear-gradient(135deg, #546e7a, #263238)' },
 ]
 
+interface PoolTab {
+  key: string
+  label: string
+  ids: Set<number>
+}
+
 interface Props {
   items: TvShow[]
   imageMap: Record<number, string>
   onHome: () => void
   shareFilename?: string
+  poolTabs?: PoolTab[]
 }
 
-export default function MediaTierList({ items, imageMap, onHome, shareFilename = 'tierlist' }: Props) {
+export default function MediaTierList({ items, imageMap, onHome, shareFilename = 'tierlist', poolTabs }: Props) {
   const [tiers, setTiers] = useState<Tier[]>(DEFAULT_TIERS.map(t => ({ ...t, pokemon: [] })))
   const [displayMode, setDisplayMode] = useState(false)
   const [shareStatus, setShareStatus] = useState<'idle' | 'copying' | 'done'>('idle')
   const [isDragOver, setIsDragOver] = useState(false)
   const [modalShow, setModalShow] = useState<TvShow | null>(null)
+  const [activePoolTab, setActivePoolTab] = useState(() => poolTabs?.[0]?.key ?? '')
   const tierListRef = useRef<HTMLDivElement>(null)
   const poolRef = useRef<HTMLDivElement>(null)
 
@@ -43,6 +51,9 @@ export default function MediaTierList({ items, imageMap, onHome, shareFilename =
 
   const rankedIds = new Set(tiers.flatMap(t => t.pokemon.map(p => p.id)))
   const poolItems = enriched.filter(s => !rankedIds.has(s.id))
+  const visiblePoolItems = poolTabs && activePoolTab
+    ? poolItems.filter(s => poolTabs.find(t => t.key === activePoolTab)?.ids.has(s.id))
+    : poolItems
 
   function findItem(id: number) { return enriched.find(s => s.id === id) }
 
@@ -153,6 +164,19 @@ export default function MediaTierList({ items, imageMap, onHome, shareFilename =
             <div className="pool-col">
               <div className="pool-label">Unranked</div>
               <div className="pool-wrapper">
+                {poolTabs && (
+                  <div className="gen-tabs">
+                    {poolTabs.map(tab => (
+                      <button
+                        key={tab.key}
+                        className={`gen-tab${activePoolTab === tab.key ? ' active' : ''}`}
+                        onClick={() => setActivePoolTab(tab.key)}
+                      >
+                        {tab.label}
+                      </button>
+                    ))}
+                  </div>
+                )}
                 <div
                   ref={poolRef}
                   data-pool-zone="true"
@@ -161,7 +185,7 @@ export default function MediaTierList({ items, imageMap, onHome, shareFilename =
                   onDragLeave={() => setIsDragOver(false)}
                   onDrop={handleDropOnPool}
                 >
-                  {poolItems.map(item => (
+                  {visiblePoolItems.map(item => (
                     <TvCard key={item.id} show={item} onClick={() => setModalShow(item as TvShow)} />
                   ))}
                 </div>

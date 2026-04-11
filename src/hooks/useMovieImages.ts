@@ -2,8 +2,8 @@ import { useState, useEffect } from 'react'
 
 type ImageMap = Record<number, string>
 
-// Plain Wikipedia article titles (spaces OK — we encode in the fetch)
 const WIKI: Record<number, string> = {
+  // Original 50
   1:  'The Shawshank Redemption',
   2:  'The Godfather',
   3:  'The Dark Knight',
@@ -54,14 +54,33 @@ const WIKI: Record<number, string> = {
   48: '12 Angry Men (1957 film)',
   49: 'Oldboy (2003 film)',
   50: 'Hereditary (film)',
+  // New movies 51–72
+  51: 'Good Will Hunting',
+  52: 'There Will Be Blood',
+  53: 'Apocalypse Now',
+  54: 'Taxi Driver',
+  55: 'Casablanca (film)',
+  56: '2001: A Space Odyssey',
+  57: 'Alien (film)',
+  58: 'Terminator 2: Judgment Day',
+  59: 'Arrival (film)',
+  60: 'The Martian (film)',
+  61: 'Se7en',
+  62: 'Heat (1995 film)',
+  63: 'The Shining (film)',
+  64: 'A Clockwork Orange (film)',
+  65: 'Zodiac (film)',
+  66: 'WALL-E',
+  67: 'Up (2009 film)',
+  68: 'Finding Nemo',
+  69: 'Inside Out (film)',
+  70: "Howl's Moving Castle (film)",
+  71: 'Akira (1988 film)',
+  72: 'The Iron Giant',
 }
 
 function wikiUrl(title: string): string {
-  // Encode each segment of the title preserving colons (valid in Wikipedia titles)
-  const encoded = title
-    .split(' ')
-    .map(word => encodeURIComponent(word))
-    .join('_')
+  const encoded = title.split(' ').map(word => encodeURIComponent(word)).join('_')
   return `https://en.wikipedia.org/api/rest_v1/page/summary/${encoded}`
 }
 

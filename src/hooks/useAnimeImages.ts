@@ -2,37 +2,47 @@ import { useState, useEffect } from 'react'
 
 type ImageMap = Record<number, string>
 
-export function useAnimeImages(items: { id: number; name: string }[]): ImageMap {
+const QUERY = `
+query ($ids: [Int]) {
+  Page(perPage: 100) {
+    media(idMal_in: $ids, type: ANIME) {
+      idMal
+      coverImage { large }
+    }
+  }
+}
+`
+
+export function useAnimeImages(items: { id: number; malId: number }[]): ImageMap {
   const [imageMap, setImageMap] = useState<ImageMap>({})
 
   useEffect(() => {
     let cancelled = false
 
     async function fetchAll() {
-      // Jikan allows ~3 req/sec; batch in groups of 4 with a short delay
-      const BATCH = 4
-      for (let i = 0; i < items.length; i += BATCH) {
+      const malIds = items.map(i => i.malId)
+      const malToItemId: Record<number, number> = {}
+      for (const item of items) malToItemId[item.malId] = item.id
+
+      try {
+        const res = await fetch('https://graphql.anilist.co', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+          body: JSON.stringify({ query: QUERY, variables: { ids: malIds } }),
+        })
         if (cancelled) return
-        const batch = items.slice(i, i + BATCH)
-        const results = await Promise.allSettled(
-          batch.map(item =>
-            fetch(`https://api.jikan.moe/v4/anime?q=${encodeURIComponent(item.name)}&limit=1`)
-              .then(r => r.json())
-              .then(data => ({
-                id: item.id,
-                url: (data.data?.[0]?.images?.jpg?.image_url ?? null) as string | null,
-              }))
-          )
-        )
-        if (cancelled) return
-        const partial: ImageMap = {}
-        for (const r of results) {
-          if (r.status === 'fulfilled' && r.value.url) {
-            partial[r.value.id] = r.value.url
-          }
+        const json = await res.json()
+        const media: { idMal: number; coverImage: { large: string } }[] =
+          json?.data?.Page?.media ?? []
+
+        const result: ImageMap = {}
+        for (const m of media) {
+          const itemId = malToItemId[m.idMal]
+          if (itemId && m.coverImage?.large) result[itemId] = m.coverImage.large
         }
-        setImageMap(prev => ({ ...prev, ...partial }))
-        if (i + BATCH < items.length) await new Promise(res => setTimeout(res, 400))
+        if (!cancelled) setImageMap(result)
+      } catch {
+        // silently fail
       }
     }
 
