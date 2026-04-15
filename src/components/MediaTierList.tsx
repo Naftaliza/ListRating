@@ -43,6 +43,9 @@ export default function MediaTierList({ items, imageMap, onHome, shareFilename =
   const t = tr(lang)
   const [tiers, setTiers] = useState<Tier[]>(() => makeDefaultTiers(t.tiers))
   const [displayMode, setDisplayMode] = useState(false)
+  const [poolOrder, setPoolOrder] = useState<number[] | null>(null)
+  const [blindMode, setBlindMode] = useState(false)
+  const [blindQueue, setBlindQueue] = useState<number[]>([])
 
   // Update default tier labels when language changes
   useEffect(() => {
@@ -69,6 +72,47 @@ export default function MediaTierList({ items, imageMap, onHome, shareFilename =
   const visiblePoolItems = poolTabs && activePoolTab
     ? poolItems.filter(s => poolTabs.find(t => t.key === activePoolTab)?.ids.has(s.id))
     : poolItems
+  const visibleIdSet = new Set(visiblePoolItems.map(s => s.id))
+  const orderedPoolItems = poolOrder
+    ? poolOrder.filter(id => !rankedIds.has(id) && visibleIdSet.has(id)).map(id => enriched.find(s => s.id === id)!).filter(Boolean)
+    : visiblePoolItems
+
+  const currentBlindId = blindMode ? blindQueue.find(id => !rankedIds.has(id)) : undefined
+  const currentBlindItem = currentBlindId !== undefined ? (enriched.find(s => s.id === currentBlindId) ?? null) : null
+  const blindRemaining = blindMode ? blindQueue.filter(id => !rankedIds.has(id)).length : 0
+
+  function handleShuffle() {
+    const ids = visiblePoolItems.map(s => s.id)
+    for (let i = ids.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [ids[i], ids[j]] = [ids[j], ids[i]]
+    }
+    setPoolOrder(ids)
+  }
+
+  function handleToggleBlind() {
+    if (blindMode) {
+      setBlindMode(false)
+      setBlindQueue([])
+    } else {
+      const ids = poolItems.map(s => s.id)
+      for (let i = ids.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [ids[i], ids[j]] = [ids[j], ids[i]]
+      }
+      setBlindQueue(ids)
+      setBlindMode(true)
+    }
+  }
+
+  function handleSkip() {
+    setBlindQueue(q => {
+      const first = q.find(id => !rankedIds.has(id))
+      if (first === undefined) return q
+      const rest = q.filter(id => id !== first)
+      return [...rest, first]
+    })
+  }
 
   function findItem(id: number) { return enriched.find(s => s.id === id) }
 
@@ -153,9 +197,14 @@ export default function MediaTierList({ items, imageMap, onHome, shareFilename =
           <button className="header-btn share-btn" onClick={handleShare} disabled={shareStatus !== 'idle'}>
             {shareStatus === 'copying' ? t.capturing : shareStatus === 'done' ? t.copied : t.share}
           </button>
+          <button className="header-btn shuffle-btn" onClick={handleShuffle}>{t.shuffle}</button>
+          <button
+            className={`header-btn blind-btn${blindMode ? ' blind-btn--active' : ''}`}
+            onClick={handleToggleBlind}
+          >{blindMode ? t.blindModeOff : t.blindMode}</button>
           <button
             className="header-btn reset-btn"
-            onClick={() => setTiers(makeDefaultTiers(t.tiers))}
+            onClick={() => { setTiers(makeDefaultTiers(t.tiers)); setPoolOrder(null); setBlindMode(false); setBlindQueue([]) }}
           >{t.reset}</button>
           <button className="header-btn lang-toggle-btn" onClick={toggle} style={{ display: 'flex', alignItems: 'center' }}><FlagIcon lang={lang} />{t.langToggle}</button>
         </div>
@@ -180,31 +229,45 @@ export default function MediaTierList({ items, imageMap, onHome, shareFilename =
             <div className="pool-col">
               <div className="pool-label">{t.unranked}</div>
               <div className="pool-wrapper">
-                {poolTabs && (
+                {!blindMode && poolTabs && (
                   <div className="gen-tabs">
                     {poolTabs.map(tab => (
                       <button
                         key={tab.key}
                         className={`gen-tab${activePoolTab === tab.key ? ' active' : ''}`}
-                        onClick={() => setActivePoolTab(tab.key)}
+                        onClick={() => { setActivePoolTab(tab.key); setPoolOrder(null) }}
                       >
                         {t.tabs[tab.label] ?? tab.label}
                       </button>
                     ))}
                   </div>
                 )}
-                <div
-                  ref={poolRef}
-                  data-pool-zone="true"
-                  className={`pokemon-pool tv-pool${isDragOver ? ' drag-over' : ''}`}
-                  onDragOver={e => { e.preventDefault(); setIsDragOver(true) }}
-                  onDragLeave={() => setIsDragOver(false)}
-                  onDrop={handleDropOnPool}
-                >
-                  {visiblePoolItems.map(item => (
-                    <TvCard key={item.id} show={item} onClick={() => setModalShow(item as TvShow)} />
-                  ))}
-                </div>
+                {blindMode ? (
+                  <div className="blind-spotlight">
+                    {currentBlindItem ? (
+                      <>
+                        <TvCard show={currentBlindItem as TvShow} onClick={() => setModalShow(currentBlindItem as TvShow)} />
+                        <div className="blind-progress">{blindRemaining} {t.remaining}</div>
+                        <button className="blind-skip-btn" onClick={handleSkip}>{t.skip}</button>
+                      </>
+                    ) : (
+                      <div className="blind-all-ranked">{t.allRanked}</div>
+                    )}
+                  </div>
+                ) : (
+                  <div
+                    ref={poolRef}
+                    data-pool-zone="true"
+                    className={`pokemon-pool tv-pool${isDragOver ? ' drag-over' : ''}`}
+                    onDragOver={e => { e.preventDefault(); setIsDragOver(true) }}
+                    onDragLeave={() => setIsDragOver(false)}
+                    onDrop={handleDropOnPool}
+                  >
+                    {orderedPoolItems.map(item => (
+                      <TvCard key={item.id} show={item} onClick={() => setModalShow(item as TvShow)} />
+                    ))}
+                  </div>
+                )}
               </div>
             </div>
           )}

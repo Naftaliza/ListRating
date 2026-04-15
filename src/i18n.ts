@@ -12,6 +12,12 @@ export interface Translations {
   langToggle: string
   tierListMaker: string
   chooseTopic: string
+  shuffle: string
+  blindMode: string
+  blindModeOff: string
+  skip: string
+  allRanked: string
+  remaining: string
   topics: Record<string, { label: string; tagline: string }>
   tiers: { goat: string; elite: string; solid: string; decent: string; meh: string; weak: string; trash: string }
   tabs: Record<string, string>
@@ -29,6 +35,12 @@ const EN: Translations = {
   langToggle: 'עברית',
   tierListMaker: 'RankForge',
   chooseTopic: 'Choose a topic to start ranking',
+  shuffle: '⇄ Shuffle',
+  blindMode: '🙈 Blind',
+  blindModeOff: '👁 Reveal',
+  skip: 'Skip →',
+  allRanked: 'All ranked!',
+  remaining: 'remaining',
   topics: {
     pokemon:    { label: 'Pokémon',     tagline: 'Rank every Pokémon by generation' },
     tvseries:   { label: 'TV Series',   tagline: 'Rank your favourite shows' },
@@ -77,6 +89,12 @@ const HE: Translations = {
   langToggle: 'English',
   tierListMaker: 'RankForge',
   chooseTopic: 'בחר נושא כדי להתחיל לדרג',
+  shuffle: '⇄ ערבב',
+  blindMode: '🙈 עיוור',
+  blindModeOff: '👁 חשוף',
+  skip: '← דלג',
+  allRanked: '!הכל דורג',
+  remaining: 'נותרו',
   topics: {
     pokemon:    { label: 'פוקימון',      tagline: 'דרג כל פוקימון לפי דור' },
     tvseries:   { label: 'סדרות',        tagline: 'דרג את הסדרות האהובות עליך' },

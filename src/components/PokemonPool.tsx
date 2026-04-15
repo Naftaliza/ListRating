@@ -10,9 +10,14 @@ interface Props {
   rankedIds: Set<number>
   onDrop: (data: DragData) => void
   onGenLoaded: (genId: number, pokemon: Pokemon[]) => void
+  displayOrder?: number[]
+  blindMode?: boolean
+  currentBlindItem?: Pokemon | null
+  blindRemaining?: number
+  onSkip?: () => void
 }
 
-export default function PokemonPool({ rankedIds, onDrop, onGenLoaded }: Props) {
+export default function PokemonPool({ rankedIds, onDrop, onGenLoaded, displayOrder, blindMode, currentBlindItem, blindRemaining, onSkip }: Props) {
   const { lang } = useLang()
   const t = tr(lang)
   const [activeGen, setActiveGen] = useState(1)
@@ -43,7 +48,11 @@ export default function PokemonPool({ rankedIds, onDrop, onGenLoaded }: Props) {
     return () => el.removeEventListener('touchdrop', onTouchDrop)
   }, [onDrop])
 
-  const currentPokemon = (genData[activeGen] ?? []).filter(p => !rankedIds.has(p.id))
+  const genPokemon = (genData[activeGen] ?? []).filter(p => !rankedIds.has(p.id))
+  const genIdSet = new Set((genData[activeGen] ?? []).map(p => p.id))
+  const currentPokemon = displayOrder
+    ? displayOrder.filter(id => genIdSet.has(id) && !rankedIds.has(id)).map(id => (genData[activeGen] ?? []).find(p => p.id === id)!)
+    : genPokemon
   const isLoading = loading[activeGen] ?? false
   const currentError = error[activeGen] ?? ''
 
@@ -66,43 +75,59 @@ export default function PokemonPool({ rankedIds, onDrop, onGenLoaded }: Props) {
     <>
     <div className="pool-label">{t.unranked}</div>
     <div className="pool-wrapper">
-      <div className="gen-tabs">
-        {GENERATIONS.map(gen => (
-          <button
-            key={gen.id}
-            className={`gen-tab${activeGen === gen.id ? ' active' : ''}`}
-            onClick={() => setActiveGen(gen.id)}
-          >
-            {gen.label}
-          </button>
-        ))}
-      </div>
-
-      <div
-        ref={poolRef}
-        data-pool-zone="true"
-        className={`pokemon-pool${isDragOver ? ' drag-over' : ''}`}
-        onDragOver={handleDragOver}
-        onDragLeave={() => setIsDragOver(false)}
-        onDrop={handleDrop}
-      >
-        {isLoading && <span className="pool-loading">Loading…</span>}
-        {currentError && !isLoading && (
-          <span className="pool-loading" style={{ color: '#f87171' }}>
-            {currentError}&nbsp;
+      {!blindMode && (
+        <div className="gen-tabs">
+          {GENERATIONS.map(gen => (
             <button
-              className="retry-btn"
-              onClick={() => {
-                const gen = GENERATIONS.find(g => g.id === activeGen)!
-                fetchGen(gen.id, gen.offset, gen.limit, true)
-              }}
-            >Retry</button>
-          </span>
-        )}
-        {!isLoading && currentPokemon.map(p => (
-          <PokemonImage key={p.id} pokemon={p} sourceType="pool" />
-        ))}
-      </div>
+              key={gen.id}
+              className={`gen-tab${activeGen === gen.id ? ' active' : ''}`}
+              onClick={() => setActiveGen(gen.id)}
+            >
+              {gen.label}
+            </button>
+          ))}
+        </div>
+      )}
+
+      {blindMode ? (
+        <div className="blind-spotlight">
+          {currentBlindItem ? (
+            <>
+              <PokemonImage pokemon={currentBlindItem} sourceType="pool" />
+              <div className="blind-progress">{blindRemaining} {t.remaining}</div>
+              <button className="blind-skip-btn" onClick={onSkip}>{t.skip}</button>
+            </>
+          ) : (
+            <div className="blind-all-ranked">{t.allRanked}</div>
+          )}
+        </div>
+      ) : (
+        <div
+          ref={poolRef}
+          data-pool-zone="true"
+          className={`pokemon-pool${isDragOver ? ' drag-over' : ''}`}
+          onDragOver={handleDragOver}
+          onDragLeave={() => setIsDragOver(false)}
+          onDrop={handleDrop}
+        >
+          {isLoading && <span className="pool-loading">Loading…</span>}
+          {currentError && !isLoading && (
+            <span className="pool-loading" style={{ color: '#f87171' }}>
+              {currentError}&nbsp;
+              <button
+                className="retry-btn"
+                onClick={() => {
+                  const gen = GENERATIONS.find(g => g.id === activeGen)!
+                  fetchGen(gen.id, gen.offset, gen.limit, true)
+                }}
+              >Retry</button>
+            </span>
+          )}
+          {!isLoading && currentPokemon.map(p => (
+            <PokemonImage key={p.id} pokemon={p} sourceType="pool" />
+          ))}
+        </div>
+      )}
     </div>
     </>
   )

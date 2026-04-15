@@ -219,6 +219,69 @@
   background: #1e1030;
   color: #c4b5fd;
 }
+.shuffle-btn {
+  color: #60a5fa;
+  border-color: #1e3a5f;
+}
+.shuffle-btn:hover {
+  background: #0f2440;
+  color: #93c5fd;
+}
+.blind-btn {
+  color: #c084fc;
+  border-color: #4a2070;
+}
+.blind-btn:hover {
+  background: #2a1040;
+  color: #e9d5ff;
+}
+.blind-btn--active {
+  background: #3b1f6e;
+  color: #e9d5ff;
+  border-color: #7c3aed;
+}
+.blind-btn--active:hover {
+  background: #4c2a88;
+}
+
+/* ── Blind mode spotlight ── */
+.blind-spotlight {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 24px 16px;
+  min-height: 180px;
+  gap: 12px;
+  background: #0d0d1a;
+  border-radius: 8px;
+  border: 1px dashed rgba(124, 58, 237, 0.35);
+}
+.blind-progress {
+  font-size: 12px;
+  color: #888;
+  letter-spacing: 0.5px;
+}
+.blind-skip-btn {
+  background: rgba(255,255,255,0.07);
+  border: 1px solid rgba(255,255,255,0.15);
+  color: #ccc;
+  border-radius: 999px;
+  padding: 5px 18px;
+  font-size: 13px;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+.blind-skip-btn:hover {
+  background: rgba(255,255,255,0.14);
+  color: #fff;
+}
+.blind-all-ranked {
+  color: #4ade80;
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+}
 
 /* ── Topic page lang toggle ── */
 .lang-toggle {
