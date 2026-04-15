@@ -90,17 +90,21 @@ export default function MediaTierList({ items, imageMap, onHome, shareFilename =
     setPoolOrder(ids)
   }
 
+  function buildShuffledQueue(items: typeof visiblePoolItems) {
+    const ids = items.map(s => s.id)
+    for (let i = ids.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [ids[i], ids[j]] = [ids[j], ids[i]]
+    }
+    return ids
+  }
+
   function handleToggleBlind() {
     if (blindMode) {
       setBlindMode(false)
       setBlindQueue([])
     } else {
-      const ids = poolItems.map(s => s.id)
-      for (let i = ids.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [ids[i], ids[j]] = [ids[j], ids[i]]
-      }
-      setBlindQueue(ids)
+      setBlindQueue(buildShuffledQueue(visiblePoolItems))
       setBlindMode(true)
     }
   }
@@ -229,13 +233,20 @@ export default function MediaTierList({ items, imageMap, onHome, shareFilename =
             <div className="pool-col">
               <div className="pool-label">{t.unranked}</div>
               <div className="pool-wrapper">
-                {!blindMode && poolTabs && (
+                {poolTabs && (
                   <div className="gen-tabs">
                     {poolTabs.map(tab => (
                       <button
                         key={tab.key}
                         className={`gen-tab${activePoolTab === tab.key ? ' active' : ''}`}
-                        onClick={() => { setActivePoolTab(tab.key); setPoolOrder(null) }}
+                        onClick={() => {
+                          setActivePoolTab(tab.key)
+                          setPoolOrder(null)
+                          if (blindMode) {
+                            const tabItems = poolItems.filter(s => tab.ids.has(s.id))
+                            setBlindQueue(buildShuffledQueue(tabItems))
+                          }
+                        }}
                       >
                         {t.tabs[tab.label] ?? tab.label}
                       </button>

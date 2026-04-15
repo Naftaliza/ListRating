@@ -250,12 +250,24 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 24px 16px;
-  min-height: 180px;
-  gap: 12px;
+  padding: 32px 16px;
+  min-height: 260px;
+  gap: 14px;
   background: #0d0d1a;
   border-radius: 8px;
   border: 1px dashed rgba(124, 58, 237, 0.35);
+}
+.blind-spotlight .tv-card {
+  width: 120px;
+}
+.blind-spotlight .tv-poster,
+.blind-spotlight .tv-poster-fallback {
+  width: 120px;
+  height: 174px;
+}
+.blind-spotlight .tv-card-title {
+  font-size: 12px;
+  max-width: 120px;
 }
 .blind-progress {
   font-size: 12px;
