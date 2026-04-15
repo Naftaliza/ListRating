@@ -105,7 +105,7 @@ const HE: Translations = {
   tiers: {
     goat:   '🏆 הכי טוב',
     elite:  '⚡ עלית',
-    solid:  '💪 בחירה מוצקה',
+    solid:  '💪 סולידי',
     decent: '👍 סביר',
     meh:    '😐 ממוצע',
     weak:   '💀 חלש',

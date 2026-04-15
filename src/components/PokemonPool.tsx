@@ -10,6 +10,8 @@ interface Props {
   rankedIds: Set<number>
   onDrop: (data: DragData) => void
   onGenLoaded: (genId: number, pokemon: Pokemon[]) => void
+  activeGen: number
+  onGenChange: (gen: number) => void
   displayOrder?: number[]
   blindMode?: boolean
   currentBlindItem?: Pokemon | null
@@ -17,10 +19,9 @@ interface Props {
   onSkip?: () => void
 }
 
-export default function PokemonPool({ rankedIds, onDrop, onGenLoaded, displayOrder, blindMode, currentBlindItem, blindRemaining, onSkip }: Props) {
+export default function PokemonPool({ rankedIds, onDrop, onGenLoaded, activeGen, onGenChange, displayOrder, blindMode, currentBlindItem, blindRemaining, onSkip }: Props) {
   const { lang } = useLang()
   const t = tr(lang)
-  const [activeGen, setActiveGen] = useState(1)
   const [isDragOver, setIsDragOver] = useState(false)
   const { genData, loading, error, fetchGen } = usePokemon()
   const poolRef = useRef<HTMLDivElement>(null)
@@ -75,19 +76,17 @@ export default function PokemonPool({ rankedIds, onDrop, onGenLoaded, displayOrd
     <>
     <div className="pool-label">{t.unranked}</div>
     <div className="pool-wrapper">
-      {!blindMode && (
-        <div className="gen-tabs">
-          {GENERATIONS.map(gen => (
-            <button
-              key={gen.id}
-              className={`gen-tab${activeGen === gen.id ? ' active' : ''}`}
-              onClick={() => setActiveGen(gen.id)}
-            >
-              {gen.label}
-            </button>
-          ))}
-        </div>
-      )}
+      <div className="gen-tabs">
+        {GENERATIONS.map(gen => (
+          <button
+            key={gen.id}
+            className={`gen-tab${activeGen === gen.id ? ' active' : ''}`}
+            onClick={() => onGenChange(gen.id)}
+          >
+            {gen.label}
+          </button>
+        ))}
+      </div>
 
       {blindMode ? (
         <div className="blind-spotlight">

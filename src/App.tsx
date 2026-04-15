@@ -1,6 +1,7 @@
 import { useState, useMemo, useRef, useEffect } from 'react'
 import html2canvas from 'html2canvas'
 import type { Tier, Pokemon, DragData } from './types/pokemon'
+import { GENERATIONS } from './constants/generations'
 import { ModalContext } from './context/ModalContext'
 import { LangProvider, useLang } from './context/LangContext'
 import { tr } from './i18n'
@@ -46,6 +47,7 @@ function PokemonTierList({ onHome }: { onHome: () => void }) {
   const [poolOrder, setPoolOrder] = useState<number[] | null>(null)
   const [blindMode, setBlindMode] = useState(false)
   const [blindQueue, setBlindQueue] = useState<number[]>([])
+  const [activeGen, setActiveGen] = useState(1)
   const tierListRef = useRef<HTMLDivElement>(null)
 
   const sortedAllPokemon = useMemo(
@@ -88,13 +90,25 @@ function PokemonTierList({ onHome }: { onHome: () => void }) {
     setTiers(prev => prev.map(t => t.id === tierId ? { ...t, label } : t))
   }
 
-  function handleShuffle() {
-    const ids = Array.from(allPokemon.keys())
-    for (let i = ids.length - 1; i > 0; i--) {
+  function getGenIds(genId: number) {
+    const gen = GENERATIONS.find(g => g.id === genId)
+    if (!gen) return []
+    const min = gen.offset + 1
+    const max = gen.offset + gen.limit
+    return Array.from(allPokemon.keys()).filter(id => id >= min && id <= max)
+  }
+
+  function shuffle(ids: number[]) {
+    const arr = [...ids]
+    for (let i = arr.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1));
-      [ids[i], ids[j]] = [ids[j], ids[i]]
+      [arr[i], arr[j]] = [arr[j], arr[i]]
     }
-    setPoolOrder(ids)
+    return arr
+  }
+
+  function handleShuffle() {
+    setPoolOrder(shuffle(getGenIds(activeGen)))
   }
 
   function handleToggleBlind() {
@@ -102,13 +116,16 @@ function PokemonTierList({ onHome }: { onHome: () => void }) {
       setBlindMode(false)
       setBlindQueue([])
     } else {
-      const ids = Array.from(allPokemon.keys()).filter(id => !rankedIds.has(id))
-      for (let i = ids.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [ids[i], ids[j]] = [ids[j], ids[i]]
-      }
-      setBlindQueue(ids)
+      setBlindQueue(shuffle(getGenIds(activeGen).filter(id => !rankedIds.has(id))))
       setBlindMode(true)
+    }
+  }
+
+  function handleGenChange(genId: number) {
+    setActiveGen(genId)
+    setPoolOrder(null)
+    if (blindMode) {
+      setBlindQueue(shuffle(getGenIds(genId).filter(id => !rankedIds.has(id))))
     }
   }
 
@@ -193,6 +210,8 @@ function PokemonTierList({ onHome }: { onHome: () => void }) {
                 rankedIds={rankedIds}
                 onDrop={handleDropOnPool}
                 onGenLoaded={handleGenLoaded}
+                activeGen={activeGen}
+                onGenChange={handleGenChange}
                 displayOrder={poolOrder ?? undefined}
                 blindMode={blindMode}
                 currentBlindItem={blindMode ? (allPokemon.get(blindQueue.find(id => !rankedIds.has(id))!) ?? null) : null}
